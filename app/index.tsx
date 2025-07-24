@@ -16,7 +16,6 @@ export default function IndexScreen() {
         router.replace("/(auth)/sign-in");
       }
     }, 1000);
-
     return () => clearTimeout(timer);
   }, [isAuthenticated]);
 
