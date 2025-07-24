@@ -1,83 +1,130 @@
-import { useEffect } from "react";
-import { View, Text, ActivityIndicator } from "react-native";
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  withDelay,
-} from "react-native-reanimated";
+import { useEffect, useRef } from "react";
+import {
+  View,
+  Text,
+  Animated,
+  ImageBackground,
+  Image,
+  ActivityIndicator,
+} from "react-native";
 
 interface SplashScreenProps {
   onFinish: () => void;
 }
 
 export function SplashScreen({ onFinish }: SplashScreenProps) {
-  const logoOpacity = useSharedValue(0);
-  const logoScale = useSharedValue(0.8);
-  const textOpacity = useSharedValue(0);
-  const loadingOpacity = useSharedValue(0);
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(50)).current;
+  const scaleAnim = useRef(new Animated.Value(0.8)).current;
+  const floatAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    // Logo animation
-    logoOpacity.value = withTiming(1, { duration: 800 });
-    logoScale.value = withTiming(1, { duration: 800 });
+    // Main entrance animation
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 1500,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 1200,
+        useNativeDriver: true,
+      }),
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        tension: 50,
+        friction: 7,
+        useNativeDriver: true,
+      }),
+    ]).start();
 
-    // Text animation with delay
-    textOpacity.value = withDelay(400, withTiming(1, { duration: 600 }));
+    // Continuous floating animation
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(floatAnim, {
+          toValue: 1,
+          duration: 3000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(floatAnim, {
+          toValue: 0,
+          duration: 3000,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
 
-    // Loading animation with delay
-    loadingOpacity.value = withDelay(800, withTiming(1, { duration: 400 }));
-
-    // Auto finish after 3 seconds
+    // Auto finish after 5 seconds
     const timer = setTimeout(() => {
       onFinish();
-    }, 3000);
+    }, 5000);
 
     return () => clearTimeout(timer);
-  }, [loadingOpacity, logoOpacity, logoScale, onFinish, textOpacity]);
+  }, [fadeAnim, floatAnim, scaleAnim, slideAnim, onFinish]);
 
-  const logoAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: logoOpacity.value,
-    transform: [{ scale: logoScale.value }],
-  }));
-
-  const textAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: textOpacity.value,
-  }));
-
-  const loadingAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: loadingOpacity.value,
-  }));
+  const floatingTransform = floatAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, -20],
+  });
 
   return (
-    <View className="flex-1 bg-primary justify-center items-center px-8">
-      {/* Background gradient effect */}
-      <View className="absolute inset-0 bg-gradient-to-br from-primary-300 to-primary-600" />
+    <View className='flex-1 bg-primary'>
+      {/* Main gradient background */}
 
-      <Animated.View style={logoAnimatedStyle} className="items-center mb-8">
-        <Text className="text-4xl font-bold text-navy-900 mb-2 tracking-wider">
-          DESCUBRELO
-        </Text>
-        <View className="flex-row items-center">
-          <Text className="text-4xl font-bold text-navy-900 tracking-wider">
-            COLORADO
-          </Text>
-        </View>
-        {/* Mountain silhouette */}
-        <View className="mt-2">
-          <Text className="text-2xl text-navy-900">⛰️</Text>
-        </View>
+      {/* Diagonal crossing gradient dividers using image */}
+      <Image
+        source={require("@/assets/images/Diagonal-crossing.png")}
+        className='absolute -top-32 left-28 w-full h-full'
+        resizeMode='cover'
+      />
+
+      {/* Main content container */}
+      <Animated.View
+        className='flex-1 justify-center items-center px-8'
+        style={{
+          opacity: fadeAnim,
+          transform: [{ translateY: slideAnim }, { scale: scaleAnim }],
+        }}
+      >
+        {/* Logo container */}
+        <Animated.View
+          className='items-center justify-center'
+          style={{
+            transform: [{ translateY: floatingTransform }],
+          }}
+        >
+          <Image
+            source={require("@/assets/images/logo.png")}
+            className='w-60 h-32'
+            resizeMode='stretch'
+          />
+        </Animated.View>
       </Animated.View>
 
-      <Animated.View style={textAnimatedStyle} className="mb-12">
-        <Text className="text-navy-700 text-center text-base leading-6 px-4">
-          Descubrelo Colorado is a exploring app for tourist and visitors, who
-          can see events, locations and so on over the app.
-        </Text>
-      </Animated.View>
-
-      <Animated.View style={loadingAnimatedStyle}>
-        <ActivityIndicator size="large" color="#1E293B" />
+      {/* Bottom section with background image and description */}
+      <View className='absolute bottom-16 left-0 right-0 h-72'>
+        <ImageBackground
+          source={require("@/assets/images/bottombghill.png")}
+          className='flex-1 justify-end'
+          resizeMode='stretch'
+        >
+          <Animated.View
+            className='px-8 pt-5'
+            style={{
+              opacity: fadeAnim,
+              transform: [{ translateY: slideAnim }],
+            }}
+          >
+            <Text className='text-base text-black/50 text-center leading-6 opacity-80 font-normal'>
+              Descubrelo Colorado is a exploring app for tourist and visitors,
+              who can see events, locations and so on over the app.
+            </Text>
+          </Animated.View>
+        </ImageBackground>
+      </View>
+      <Animated.View>
+        <ActivityIndicator size='large' color='#1E293B' />
       </Animated.View>
     </View>
   );

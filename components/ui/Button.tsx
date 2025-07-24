@@ -24,7 +24,7 @@ export function Button({
   textClassName, // Added prop for Text-specific styling
 }: ButtonProps) {
   const baseStyles =
-    "flex-row items-center justify-center rounded-[8px] font-medium";
+    "flex-row items-center justify-center rounded-base font-medium";
 
   const variantStyles = {
     primary: "bg-primary",

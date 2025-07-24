@@ -1,7 +1,7 @@
 import { View, Text, Modal } from "react-native";
 import { Check } from "lucide-react-native";
 import { Button } from "./ui/Button";
-import { shadowStyles } from "@/utils/shadows";
+import { shadows } from "@/utils/shadows";
 
 interface SuccessModalProps {
   visible: boolean;
@@ -20,7 +20,7 @@ export function SuccessModal({ visible, title, onClose }: SuccessModalProps) {
       <View className='flex-1 bg-overlay justify-center items-center px-4'>
         <View
           className='bg-card rounded-3xl p-12 w-full max-w-sm'
-          style={shadowStyles.modal}
+          style={shadows.card}
         >
           {/* Success Icon */}
           <View className='items-center mb-8'>
