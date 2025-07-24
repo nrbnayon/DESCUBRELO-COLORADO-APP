@@ -118,6 +118,8 @@ interface AppState {
   // UI state
   theme: "light" | "dark" | "system";
 
+  hasSeenOnboarding: boolean;
+
   // Notifications
   notifications: Notification[];
   unreadNotificationCount: number;
@@ -141,6 +143,7 @@ interface AppState {
   // UI Actions
   setTheme: (theme: AppState["theme"]) => void;
   setLoading: (loading: boolean) => void;
+  setHasSeenOnboarding: (value: boolean) => void;
   setError: (error: string | null) => void;
 
   // Notification Actions
@@ -188,13 +191,13 @@ export const useAppStore = create<AppState>()(
       isAuthenticated: false,
       isLoading: false,
       theme: "system",
+      hasSeenOnboarding: false,
       notifications: [],
       unreadNotificationCount: 0,
       forgotPasswordEmail: null,
       otpVerified: false,
       settings: defaultSettings,
       error: null,
-
       // User Actions
       login: (user: User) => {
         set({
@@ -258,6 +261,8 @@ export const useAppStore = create<AppState>()(
       setError: (error: string | null) => {
         set({ error });
       },
+
+      setHasSeenOnboarding: (value) => set({ hasSeenOnboarding: value }),
 
       // Notification Actions
       addNotification: (notification: Omit<Notification, "id">) => {
