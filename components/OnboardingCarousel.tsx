@@ -117,6 +117,7 @@ export function OnboardingCarousel({ onFinish }: OnboardingCarouselProps) {
         scale.value = withTiming(1, { duration: 500 });
       }
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentIndex]);
 
   const animatedStyle0 = useAnimatedStyle(() => {

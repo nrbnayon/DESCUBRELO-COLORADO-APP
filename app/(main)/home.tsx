@@ -137,18 +137,20 @@ export default function HomeScreen() {
   }) => (
     <TouchableOpacity
       onPress={onPress}
-      className="bg-white p-4 rounded-lg border border-gray-200 mb-3 flex-row items-center"
+      className='bg-white p-4 rounded-lg border border-gray-200 mb-3 flex-row items-center'
       activeOpacity={0.7}
     >
-      <View className="w-12 h-12 bg-primary/10 rounded-full items-center justify-center mr-3">
-        <MapPin size={24} color="#4DBA28" />
+      <View className='w-12 h-12 bg-primary/10 rounded-full items-center justify-center mr-3'>
+        <MapPin size={24} color='#4DBA28' />
       </View>
-      <View className="flex-1">
-        <Text className="text-base font-medium text-black">{title}</Text>
-        <View className="flex-row items-center mt-1">
-          <Star size={16} color="#fbbf24" />
-          <Text className="text-sm text-gray-600 ml-1">4.8</Text>
-          <Text className="text-sm text-gray-400 ml-2">
+      <View className='flex-1'>
+        <TranslatedText className='text-base font-medium text-black'>
+          {title}
+        </TranslatedText>
+        <View className='flex-row items-center mt-1'>
+          <Star size={16} color='#fbbf24' />
+          <Text className='text-sm text-gray-600 ml-1'>4.8</Text>
+          <Text className='text-sm text-gray-400 ml-2'>
             <TranslatedText>Popular destination</TranslatedText>
           </Text>
         </View>
