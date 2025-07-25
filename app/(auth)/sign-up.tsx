@@ -1,6 +1,6 @@
-// app\(auth)\sign-up.tsx
+// app/(auth)/sign-up.tsx
 import { useState } from "react";
-import { View, Text, ScrollView } from "react-native";
+import { View, Text, ScrollView, Dimensions } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { useForm, Controller } from "react-hook-form";
@@ -8,13 +8,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Checkbox } from "@/components/ui/Checkbox";
+import { PasswordStrengthIndicator } from "@/components/ui/PasswordStrengthIndicator";
 import { signUpSchema, type SignUpFormData } from "@/utils/validationSchemas";
 import { showToast } from "@/utils/toast";
 import { useAppStore } from "@/store/useAppStore";
+import { AnimatedHeader } from "@/components/shared/AnimatedHeader";
+import { Lock, Mail, User2 } from "lucide-react-native";
 
 export default function SignUpScreen() {
-  const [showPassword] = useState(false);
-  const [showConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { setUser } = useAppStore();
 
@@ -23,16 +24,16 @@ export default function SignUpScreen() {
     handleSubmit,
     formState: { errors },
     watch,
+    trigger,
   } = useForm<SignUpFormData>({
     resolver: zodResolver(signUpSchema),
     defaultValues: {
       name: "",
       email: "",
       password: "",
-      confirmPassword: "",
-      referralCode: "",
       agreeToPrivacyPolicy: false,
     },
+    mode: "onChange",
   });
 
   const agreeToPrivacyPolicy = watch("agreeToPrivacyPolicy");
@@ -48,6 +49,9 @@ export default function SignUpScreen() {
         id: "1",
         name: data.name,
         email: data.email,
+        createdAt: new Date().toISOString(),
+        isVerified: false,
+        role: "user",
       });
 
       showToast(
@@ -64,119 +68,147 @@ export default function SignUpScreen() {
     }
   };
 
-  // Remove custom password toggle since Input component likely has its own
+  const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 
   return (
     <SafeAreaView className="flex-1 bg-surface">
+      <AnimatedHeader
+        title={`Create a new account${"\n"}with your email`}
+        titleClassName="text-black text-2xl font-semibold text-center leading-8"
+        showBackButton={true}
+      />
       <ScrollView className="flex-1 p-5" showsVerticalScrollIndicator={false}>
-        <View className="py-6">
-          <Text className="text-black text-3xl font-semibold mb-8">
-            Create a new{"\n"}Account
-          </Text>
-
-          <View className="space-y-6">
+        <View style={{ marginTop: SCREEN_HEIGHT * 0.22 }}>
+          <View>
+            {/* Name Input */}
             <Controller
               control={control}
               name="name"
               render={({ field: { onChange, value } }) => (
                 <Input
-                  label="Name"
-                  placeholder="Enter your Name"
+                  label="Full Name"
+                  placeholder="Enter your full name"
                   value={value}
-                  onChangeText={onChange}
+                  onChangeText={(text) => {
+                    onChange(text);
+                    trigger("name"); // Trigger validation on change
+                  }}
                   error={errors.name?.message}
+                  maxLength={50}
+                  autoCapitalize="words"
+                  icon={<User2 size={20} color="#4DBA28" />}
+                  iconPosition="left"
                 />
               )}
             />
 
+            {/* Email Input with restrictions */}
             <Controller
               control={control}
               name="email"
               render={({ field: { onChange, value } }) => (
                 <Input
-                  label="Email"
+                  label="Email Address"
                   placeholder="example@gmail.com"
                   value={value}
-                  onChangeText={onChange}
+                  onChangeText={(text) => {
+                    onChange(text);
+                    trigger("email"); // Trigger validation on change
+                  }}
                   keyboardType="email-address"
                   autoCapitalize="none"
+                  restrictInput="email" // Apply email restrictions
                   error={errors.email?.message}
+                  maxLength={100}
+                  icon={<Mail size={20} color="#4DBA28" />}
+                  iconPosition="left"
                 />
               )}
             />
-
+            {/* Password Input */}
             <Controller
               control={control}
               name="password"
               render={({ field: { onChange, value } }) => (
-                <Input
-                  label="Password"
-                  placeholder="Enter your Password"
-                  value={value}
-                  onChangeText={onChange}
-                  secureTextEntry={!showPassword}
-                  error={errors.password?.message}
-                />
+                <View className="mb-1">
+                  <Input
+                    label="Create Password"
+                    placeholder="Enter your password"
+                    value={value}
+                    onChangeText={(text) => {
+                      onChange(text);
+                      trigger("password");
+                    }}
+                    restrictInput="password"
+                    secureTextEntry={true}
+                    error={errors.password?.message}
+                    maxLength={128}
+                    icon={<Lock size={20} color="#4DBA28" />}
+                    iconPosition="left"
+                  />
+                  {/* Password Strength Indicator */}
+                  <PasswordStrengthIndicator password={value} />
+                </View>
               )}
             />
 
-            <Controller
-              control={control}
-              name="confirmPassword"
-              render={({ field: { onChange, value } }) => (
-                <Input
-                  label="Confirm Password"
-                  placeholder="Confirm your Password"
-                  value={value}
-                  onChangeText={onChange}
-                  secureTextEntry={!showConfirmPassword}
-                  error={errors.confirmPassword?.message}
-                />
-              )}
-            />
-
-            <Controller
-              control={control}
-              name="referralCode"
-              render={({ field: { onChange, value } }) => (
-                <Input
-                  label="Referral Code (Optional)"
-                  placeholder="Enter your referral code"
-                  value={value}
-                  onChangeText={onChange}
-                  error={errors.referralCode?.message}
-                />
-              )}
-            />
-
+            {/* Privacy Policy Checkbox */}
             <Controller
               control={control}
               name="agreeToPrivacyPolicy"
               render={({ field: { onChange, value } }) => (
                 <Checkbox
                   checked={value}
-                  onPress={() => onChange(!value)}
-                  label="I agree to the privacy policy."
+                  onPress={() => {
+                    onChange(!value);
+                    trigger("agreeToPrivacyPolicy");
+                  }}
                   error={errors.agreeToPrivacyPolicy?.message}
+                  label={
+                    <Text className="text-base text-black dark:text-white leading-5">
+                      I agree to the{" "}
+                      <Text
+                        className="underline text-primary-dark"
+                        onPress={() =>
+                          router.navigate("/(screen)/privacy-policy")
+                        }
+                      >
+                        privacy policy
+                      </Text>{" "}
+                      and{" "}
+                      <Text
+                        className="underline text-primary-dark"
+                        onPress={() =>
+                          router.navigate("/(screen)/privacy-policy")
+                        }
+                      >
+                        terms
+                      </Text>
+                      .
+                    </Text>
+                  }
                 />
               )}
             />
 
+            {/* Sign Up Button */}
             <Button
               onPress={handleSubmit(onSubmit)}
               loading={isLoading}
-              disabled={!agreeToPrivacyPolicy}
-              size="lg"
-              className="w-full bg-primary mt-6 "
+              disabled={!agreeToPrivacyPolicy || isLoading}
+              size="md"
+              className="w-full bg-primary mt-5"
+              textClassName="!text-black"
             >
-              Sign Up
+              {isLoading ? "Creating Account..." : "Sign Up"}
             </Button>
 
+            {/* Sign In Link */}
             <View className="items-center mt-6 pb-8">
               <Text className="text-primary-dark text-base">
                 Already have an Account?{" "}
                 <Text
-                  className="text-primary font-semibold"
+                  className="text-primary-dark font-semibold"
                   onPress={() => router.push("/(auth)/sign-in")}
                 >
                   Sign In

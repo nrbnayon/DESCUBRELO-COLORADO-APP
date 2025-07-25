@@ -158,9 +158,9 @@ export function WelcomeScreen({
   };
 
   return (
-    <View className='flex-1'>
+    <View className="flex-1">
       {/* Background Image with animation */}
-      <View className='flex-1 relative'>
+      <View className="flex-1 relative">
         <Animated.View style={backgroundImageStyle}>
           <Image
             source={require("@/assets/images/w4.png")}
@@ -168,7 +168,7 @@ export function WelcomeScreen({
               width: SCREEN_WIDTH,
               height: SCREEN_HEIGHT * 0.8,
             }}
-            contentFit='cover'
+            contentFit="cover"
           />
         </Animated.View>
 
@@ -177,7 +177,7 @@ export function WelcomeScreen({
 
         {/* Logo positioned in upper portion */}
         <View
-          className='absolute left-0 right-0 items-center'
+          className="absolute left-0 right-0 items-center"
           style={{
             top: SCREEN_HEIGHT * 0.18, // Position logo in upper 15% of screen
             zIndex: 10,
@@ -190,13 +190,13 @@ export function WelcomeScreen({
                 width: 200,
                 height: 80,
               }}
-              contentFit='contain'
+              contentFit="contain"
             />
           </Animated.View>
         </View>
 
         {/* Bottom Content */}
-        <View className='absolute bottom-0 left-0 right-0'>
+        <View className="absolute bottom-0 left-0 right-0">
           <ImageBackground
             source={require("@/assets/images/bottomwhitecurb.png")}
             style={{
@@ -205,14 +205,14 @@ export function WelcomeScreen({
               paddingBottom: 40,
               minHeight: 240,
             }}
-            resizeMode='stretch'
+            resizeMode="stretch"
           >
             <Animated.View style={contentStyle}>
-              <View className='mb-8'>
-                <Text className='text-2xl font-bold text-black text-center leading-8'>
+              <View className="mb-8">
+                <Text className="text-2xl font-bold text-black text-center leading-8">
                   Welcome to
                 </Text>
-                <Text className='text-xl font-semibold text-[#0D2D00] text-center'>
+                <Text className="text-xl font-semibold text-[#0D2D00] text-center">
                   Descuberelo Colorado
                 </Text>
               </View>
@@ -221,10 +221,11 @@ export function WelcomeScreen({
               <View style={{ gap: 12 }}>
                 <Animated.View style={button1Style}>
                   <Button
-                    variant='primary'
-                    size='lg'
+                    variant="primary"
+                    size="md"
                     onPress={handleCreateAccount}
-                    className='w-full bg-primary'
+                    className="w-full bg-primary"
+                    textClassName="!text-black"
                   >
                     Create New Account
                   </Button>
@@ -232,11 +233,11 @@ export function WelcomeScreen({
 
                 <Animated.View style={button2Style}>
                   <Button
-                    variant='secondary'
-                    size='lg'
+                    variant="secondary"
+                    size="md"
                     onPress={handleLogin}
-                    className='w-full bg-gray'
-                    textClassName='!text-black'
+                    className="w-full !bg-gray"
+                    textClassName="!text-black"
                   >
                     Login
                   </Button>

@@ -1,15 +1,17 @@
-// app\(auth)\sign-in.tsx
+// app/(auth)/sign-in.tsx
 import { useState } from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, Dimensions } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { AnimatedHeader } from "@/components/shared/AnimatedHeader";
 import { signInSchema, type SignInFormData } from "@/utils/validationSchemas";
 import { showToast } from "@/utils/toast";
 import { useAppStore } from "@/store/useAppStore";
+import { Lock, Mail } from "lucide-react-native";
 
 // Dev mode check - you can also use Constants.expoConfig.extra.isDev or similar
 const __DEV__ = process.env.NODE_ENV === "development";
@@ -54,14 +56,19 @@ export default function SignInScreen() {
     }
   };
 
+  const { height: SCREEN_HEIGHT } = Dimensions.get("window");
+
   return (
     <SafeAreaView className="flex-1 bg-surface">
-      <View className="flex-1 p-5">
+      <AnimatedHeader
+        title={`Login to your account${"\n"}with your email`}
+        titleClassName="text-black text-2xl font-semibold text-center leading-8"
+        showBackButton={true}
+      />
+
+      <View className="flex-1 px-5" style={{ marginTop: SCREEN_HEIGHT * 0.25 }}>
         {/* Form */}
-        <View className="flex-1 justify-center">
-          <Text className="text-black text-3xl font-semibold mb-8">
-            Sign In Now
-          </Text>
+        <View className="flex-1">
           {__DEV__ && (
             <View className="mb-4 p-3 bg-yellow-100 rounded-md">
               <Text className="text-xs text-yellow-800">
@@ -69,6 +76,7 @@ export default function SignInScreen() {
               </Text>
             </View>
           )}
+
           <Controller
             control={control}
             name="email"
@@ -76,11 +84,13 @@ export default function SignInScreen() {
               <View className="mb-4">
                 <Text className="text-black font-semibold mb-2">Email</Text>
                 <Input
-                  placeholder="example@gmail.com"
+                  placeholder="Enter your email"
                   value={value}
                   onChangeText={onChange}
                   keyboardType="email-address"
                   autoCapitalize="none"
+                  icon={<Mail size={20} color="#4DBA28" />}
+                  iconPosition="left"
                   error={errors.email?.message}
                 />
               </View>
@@ -94,9 +104,11 @@ export default function SignInScreen() {
             render={({ field: { onChange, value } }) => (
               <Input
                 label="Password"
-                placeholder="Enter your Password"
+                placeholder="Enter your password"
                 value={value}
                 onChangeText={onChange}
+                icon={<Lock size={20} color="#4DBA28" />}
+                iconPosition="left"
                 secureTextEntry={!showPassword}
                 error={errors.password?.message}
               />
@@ -105,28 +117,27 @@ export default function SignInScreen() {
 
           <TouchableOpacity
             onPress={() => router.push("/(auth)/forgot-password")}
-            className="self-end mb-6"
+            className="self-end mb-10"
           >
-            <Text className="text-primary   font-medium">Forgot password?</Text>
+            <Text className="text-primary-dark font-medium">
+              Forget password
+            </Text>
           </TouchableOpacity>
 
           <Button
             onPress={handleSubmit(onSubmit)}
             loading={isLoading}
             className="w-full mb-5"
-            size="lg"
+            size="md"
+            textClassName="!text-black"
           >
-            Sign In
+            Login
           </Button>
 
-
-
           <View className="flex-row justify-center">
-            <Text className="text-gray-600  ">
-              Don&apos;t have an Account?{" "}
-            </Text>
+            <Text className="text-gray-600">Don&apos;t have an account? </Text>
             <TouchableOpacity onPress={() => router.push("/(auth)/sign-up")}>
-              <Text className="text-primary   font-medium">Sign Up</Text>
+              <Text className="text-primary-dark font-medium">Sign Up</Text>
             </TouchableOpacity>
           </View>
         </View>

@@ -1,3 +1,4 @@
+// components/ui/Input.tsx
 import React, { useState } from "react";
 import {
   View,
@@ -8,7 +9,6 @@ import {
 } from "react-native";
 import { Eye, EyeOff } from "lucide-react-native";
 import { clsx } from "clsx";
-// import { getCardShadow, getFocusedShadow } from "@/utils/shadows";
 
 interface InputProps {
   label?: string;
@@ -19,9 +19,13 @@ interface InputProps {
   keyboardType?: "default" | "email-address" | "numeric" | "phone-pad";
   autoCapitalize?: "none" | "sentences" | "words" | "characters";
   error?: string;
-  className?: string; // Applied to the outer View
-  inputClassName?: string; // New prop for TextInput-specific classes
+  className?: string;
+  inputClassName?: string;
   labelClassName?: string;
+  icon?: React.ReactNode;
+  iconPosition?: "left" | "right";
+  restrictInput?: "email" | "password" | "none"; // New prop for input restrictions
+  maxLength?: number;
 }
 
 export function Input({
@@ -34,8 +38,12 @@ export function Input({
   autoCapitalize = "sentences",
   error,
   className,
-  inputClassName, // Added prop for TextInput-specific styling
+  inputClassName,
   labelClassName,
+  icon,
+  iconPosition = "left",
+  restrictInput = "none",
+  maxLength,
 }: InputProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
@@ -43,6 +51,52 @@ export function Input({
   const handleTogglePassword = () => {
     setShowPassword(!showPassword);
   };
+
+  const handleTextChange = (text: string) => {
+    let processedText = text;
+
+    // Apply input restrictions
+    if (restrictInput === "email") {
+      // Convert to lowercase and remove spaces
+      processedText = text.toLowerCase().replace(/\s/g, "");
+    } else if (restrictInput === "password") {
+      // Remove spaces from password
+      processedText = text.replace(/\s/g, "");
+    }
+
+    // Apply maxLength restriction
+    if (maxLength && processedText.length > maxLength) {
+      processedText = processedText.substring(0, maxLength);
+    }
+
+    onChangeText?.(processedText);
+  };
+
+  const getInputPadding = () => {
+    let paddingLeft = 16;
+    let paddingRight = 16;
+
+    if (icon && iconPosition === "left") {
+      paddingLeft = 40;
+    }
+    if (icon && iconPosition === "right") {
+      paddingRight = 40;
+    }
+
+    if (secureTextEntry) {
+      paddingRight = icon && iconPosition === "right" ? 80 : 48;
+    }
+
+    return { paddingLeft, paddingRight };
+  };
+
+  const inputPadding = getInputPadding();
+
+  // Set appropriate keyboard type and auto-capitalize for email
+  const finalKeyboardType =
+    restrictInput === "email" ? "email-address" : keyboardType;
+  const finalAutoCapitalize =
+    restrictInput === "email" ? "none" : autoCapitalize;
 
   return (
     <View className={clsx("mb-4", className)}>
@@ -52,43 +106,65 @@ export function Input({
         </Text>
       )}
       <View className="relative">
-        {/* Shadow container */}
         <View
           className="w-full"
           style={[
             styles.inputContainer,
-            // isFocused ? getFocusedShadow() : getCardShadow("sm"),
             {
               borderColor: error
-                ? "#EF4444" // error color
+                ? "#EF4444"
                 : isFocused
-                  ? "#b8860b" // primary color
-                  : "#D1D5DB", // gray-300
+                  ? "#94E474"
+                  : "#D1D5DB",
             },
           ]}
         >
+          {icon && iconPosition === "left" && (
+            <View className="absolute left-3 top-1/2 -translate-y-1/2 z-10">
+              {icon}
+            </View>
+          )}
+
           <TextInput
             value={value}
-            onChangeText={onChangeText}
+            onChangeText={handleTextChange}
             placeholder={placeholder}
             placeholderTextColor="#9CA3AF"
             secureTextEntry={secureTextEntry && !showPassword}
-            keyboardType={keyboardType}
-            autoCapitalize={autoCapitalize}
+            keyboardType={finalKeyboardType}
+            autoCapitalize={finalAutoCapitalize}
+            autoCorrect={false}
+            spellCheck={false}
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
+            maxLength={maxLength}
             className={clsx(
-              "w-full px-4 py-3   text-base text-primary-dark",
-              secureTextEntry ? "pr-12" : "",
-              inputClassName // Apply input-specific Tailwind classes
+              "w-full py-3 text-base text-primary-dark",
+              inputClassName
             )}
-            style={styles.input}
+            style={[
+              styles.input,
+              {
+                paddingLeft: inputPadding.paddingLeft,
+                paddingRight: inputPadding.paddingRight,
+              },
+            ]}
           />
+
+          {icon && iconPosition === "right" && (
+            <View className="absolute right-3 top-1/2 -translate-y-1/2 z-10">
+              {icon}
+            </View>
+          )}
         </View>
+
         {secureTextEntry && (
           <TouchableOpacity
             onPress={handleTogglePassword}
-            className="absolute right-3 top-1/2 -translate-y-1/2"
+            className="absolute top-1/2 -translate-y-1/2 z-20"
+            style={{
+              right: icon && iconPosition === "right" ? 48 : 12,
+            }}
           >
             {showPassword ? (
               <EyeOff size={20} color="#9CA3AF" />
@@ -98,7 +174,15 @@ export function Input({
           </TouchableOpacity>
         )}
       </View>
-      {error && <Text className="text-error   text-sm mt-1">{error}</Text>}
+
+      <View className="flex-row justify-between items-center mt-1">
+        {error ? <Text className="text-error text-sm">{error}</Text> : <View />}
+        {maxLength && value && (
+          <Text className="text-xs text-gray-500">
+            {value.length}/{maxLength}
+          </Text>
+        )}
+      </View>
     </View>
   );
 }
@@ -107,7 +191,7 @@ const styles = StyleSheet.create({
   inputContainer: {
     backgroundColor: "#FFFFFF",
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: 10,
   },
   input: {
     backgroundColor: "transparent",
