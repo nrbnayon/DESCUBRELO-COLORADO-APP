@@ -115,52 +115,40 @@ interface AppState {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-
   // UI state
   theme: "light" | "dark" | "system";
-
   hasSeenOnboarding: boolean;
-
   // Notifications
   notifications: Notification[];
   unreadNotificationCount: number;
-
   // Authentication flow
   forgotPasswordEmail: string | null;
   otpVerified: boolean;
-
   // App settings
   settings: AppSettings;
-
   // Error handling
   error: string | null;
-
   // User Actions
   login: (user: User) => void;
   logout: () => void;
   setUser: (user: User | null) => void;
   updateUserProfile: (userData: Partial<User>) => void;
-
   // UI Actions
   setTheme: (theme: AppState["theme"]) => void;
   setLoading: (loading: boolean) => void;
   setHasSeenOnboarding: (value: boolean) => void;
   setError: (error: string | null) => void;
-
   // Notification Actions
   addNotification: (notification: Omit<Notification, "id">) => void;
   markNotificationAsRead: (id: string) => void;
   markAllNotificationsAsRead: () => void;
   removeNotification: (id: string) => void;
   clearAllNotifications: () => void;
-
   // Authentication flow actions
   setForgotPasswordEmail: (email: string | null) => void;
   setOtpVerified: (verified: boolean) => void;
-
   // Settings actions
   updateSettings: (settings: Partial<AppSettings>) => void;
-
   // Utility actions
   resetStore: () => void;
 }
@@ -199,6 +187,7 @@ export const useAppStore = create<AppState>()(
       otpVerified: false,
       settings: defaultSettings,
       error: null,
+
       // User Actions
       login: (user: User) => {
         set({
@@ -271,10 +260,8 @@ export const useAppStore = create<AppState>()(
           ...notification,
           id: generateId(),
         };
-
         const currentNotifications = get().notifications;
         const updatedNotifications = [newNotification, ...currentNotifications];
-
         set({
           notifications: updatedNotifications,
           unreadNotificationCount: get().unreadNotificationCount + 1,
@@ -288,11 +275,9 @@ export const useAppStore = create<AppState>()(
             ? { ...notification, read: true }
             : notification
         );
-
         const wasUnread = currentNotifications.find(
           (n) => n.id === id && !n.read
         );
-
         set({
           notifications: updatedNotifications,
           unreadNotificationCount: wasUnread
@@ -308,7 +293,6 @@ export const useAppStore = create<AppState>()(
             read: true,
           })
         );
-
         set({
           notifications: updatedNotifications,
           unreadNotificationCount: 0,
@@ -323,7 +307,6 @@ export const useAppStore = create<AppState>()(
         const updatedNotifications = currentNotifications.filter(
           (notification) => notification.id !== id
         );
-
         set({
           notifications: updatedNotifications,
           unreadNotificationCount:
@@ -395,6 +378,7 @@ export const useAppStore = create<AppState>()(
         notifications: state.notifications,
         unreadNotificationCount: state.unreadNotificationCount,
         settings: state.settings,
+        hasSeenOnboarding: state.hasSeenOnboarding,
         // Don't persist loading states, errors, or temporary auth flow data
       }),
       // Handle rehydration

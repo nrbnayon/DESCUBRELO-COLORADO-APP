@@ -9,15 +9,18 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Checkbox } from "@/components/ui/Checkbox";
 import { PasswordStrengthIndicator } from "@/components/ui/PasswordStrengthIndicator";
+import { TranslatedText } from "@/components/ui/TranslatedText";
 import { signUpSchema, type SignUpFormData } from "@/utils/validationSchemas";
 import { showToast } from "@/utils/toast";
 import { useAppStore } from "@/store/useAppStore";
+import { useTranslation } from "@/hooks/useTranslation";
 import { AnimatedHeader } from "@/components/shared/AnimatedHeader";
 import { Lock, Mail, User2 } from "lucide-react-native";
 
 export default function SignUpScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const { setUser } = useAppStore();
+  const { t } = useTranslation();
 
   const {
     control,
@@ -43,7 +46,6 @@ export default function SignUpScreen() {
     try {
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 2000));
-
       // Mock successful registration
       setUser({
         id: "1",
@@ -56,13 +58,17 @@ export default function SignUpScreen() {
 
       showToast(
         "success",
-        "Account Created!",
-        "Welcome to DESCUBRELO COLORADO."
+        t("Account Created!"),
+        t("Welcome to DESCUBRELO COLORADO.")
       );
       router.replace("/(main)" as any);
     } catch (error) {
       console.error("Registration failed:", error);
-      showToast("error", "Registration Failed", "Please try again later.");
+      showToast(
+        "error",
+        t("Registration Failed"),
+        t("Please try again later.")
+      );
     } finally {
       setIsLoading(false);
     }
@@ -73,7 +79,7 @@ export default function SignUpScreen() {
   return (
     <SafeAreaView className="flex-1 bg-surface">
       <AnimatedHeader
-        title={`Create a new account${"\n"}with your email`}
+        title={t(`Create a new account${"\n"}with your email`)}
         titleClassName="text-black text-2xl font-semibold text-center leading-8"
         showBackButton={true}
       />
@@ -86,14 +92,16 @@ export default function SignUpScreen() {
               name="name"
               render={({ field: { onChange, value } }) => (
                 <Input
-                  label="Full Name"
-                  placeholder="Enter your full name"
+                  label={t("Full Name")}
+                  placeholder={t("Enter your full name")}
                   value={value}
                   onChangeText={(text) => {
                     onChange(text);
-                    trigger("name"); // Trigger validation on change
+                    trigger("name");
                   }}
-                  error={errors.name?.message}
+                  error={
+                    errors.name?.message ? t(errors.name.message) : undefined
+                  }
                   maxLength={50}
                   autoCapitalize="words"
                   icon={<User2 size={20} color="#4DBA28" />}
@@ -101,24 +109,25 @@ export default function SignUpScreen() {
                 />
               )}
             />
-
-            {/* Email Input with restrictions */}
+            {/* Email Input */}
             <Controller
               control={control}
               name="email"
               render={({ field: { onChange, value } }) => (
                 <Input
-                  label="Email Address"
-                  placeholder="example@gmail.com"
+                  label={t("Email Address")}
+                  placeholder={t("example@gmail.com")}
                   value={value}
                   onChangeText={(text) => {
                     onChange(text);
-                    trigger("email"); // Trigger validation on change
+                    trigger("email");
                   }}
                   keyboardType="email-address"
                   autoCapitalize="none"
-                  restrictInput="email" // Apply email restrictions
-                  error={errors.email?.message}
+                  restrictInput="email"
+                  error={
+                    errors.email?.message ? t(errors.email.message) : undefined
+                  }
                   maxLength={100}
                   icon={<Mail size={20} color="#4DBA28" />}
                   iconPosition="left"
@@ -132,8 +141,8 @@ export default function SignUpScreen() {
               render={({ field: { onChange, value } }) => (
                 <View className="mb-1">
                   <Input
-                    label="Create Password"
-                    placeholder="Enter your password"
+                    label={t("Create Password")}
+                    placeholder={t("Enter your password")}
                     value={value}
                     onChangeText={(text) => {
                       onChange(text);
@@ -141,17 +150,19 @@ export default function SignUpScreen() {
                     }}
                     restrictInput="password"
                     secureTextEntry={true}
-                    error={errors.password?.message}
+                    error={
+                      errors.password?.message
+                        ? t(errors.password.message)
+                        : undefined
+                    }
                     maxLength={128}
                     icon={<Lock size={20} color="#4DBA28" />}
                     iconPosition="left"
                   />
-                  {/* Password Strength Indicator */}
                   <PasswordStrengthIndicator password={value} />
                 </View>
               )}
             />
-
             {/* Privacy Policy Checkbox */}
             <Controller
               control={control}
@@ -163,34 +174,37 @@ export default function SignUpScreen() {
                     onChange(!value);
                     trigger("agreeToPrivacyPolicy");
                   }}
-                  error={errors.agreeToPrivacyPolicy?.message}
+                  error={
+                    errors.agreeToPrivacyPolicy?.message
+                      ? t(errors.agreeToPrivacyPolicy.message)
+                      : undefined
+                  }
                   label={
                     <Text className="text-base text-black dark:text-white leading-5">
-                      I agree to the{" "}
+                      <TranslatedText>I agree to the </TranslatedText>
                       <Text
                         className="underline text-primary-dark"
                         onPress={() =>
                           router.navigate("/(screen)/privacy-policy")
                         }
                       >
-                        privacy policy
-                      </Text>{" "}
-                      and{" "}
-                      <Text
-                        className="underline text-primary-dark"
-                        onPress={() =>
-                          router.navigate("/(screen)/privacy-policy")
-                        }
-                      >
-                        terms
+                        <TranslatedText>privacy policy</TranslatedText>
                       </Text>
-                      .
+                      <TranslatedText> and </TranslatedText>
+                      <Text
+                        className="underline text-primary-dark"
+                        onPress={() =>
+                          router.navigate("/(screen)/privacy-policy")
+                        }
+                      >
+                        <TranslatedText>terms</TranslatedText>
+                      </Text>
+                      <TranslatedText>.</TranslatedText>
                     </Text>
                   }
                 />
               )}
             />
-
             {/* Sign Up Button */}
             <Button
               onPress={handleSubmit(onSubmit)}
@@ -200,18 +214,19 @@ export default function SignUpScreen() {
               className="w-full bg-primary mt-5"
               textClassName="!text-black"
             >
-              {isLoading ? "Creating Account..." : "Sign Up"}
+              <TranslatedText>
+                {isLoading ? "Creating Account..." : "Sign Up"}
+              </TranslatedText>
             </Button>
-
             {/* Sign In Link */}
             <View className="items-center mt-6 pb-8">
               <Text className="text-primary-dark text-base">
-                Already have an Account?{" "}
+                <TranslatedText>Already have an Account? </TranslatedText>
                 <Text
                   className="text-primary-dark font-semibold"
                   onPress={() => router.push("/(auth)/sign-in")}
                 >
-                  Sign In
+                  <TranslatedText>Sign In</TranslatedText>
                 </Text>
               </Text>
             </View>
