@@ -1,6 +1,6 @@
 // app/(auth)/language-select.tsx
 import { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity, Dimensions } from "react-native";
+import { View, Text, TouchableOpacity, Dimensions, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { Button } from "@/components/ui/Button";
@@ -20,7 +20,7 @@ interface Language {
 const languages: Language[] = [
   {
     id: "1",
-    name: "English (United State)",
+    name: "English United State",
     flag: "🇺🇸",
     code: "en",
   },
@@ -54,34 +54,35 @@ const languages: Language[] = [
     flag: "🇵🇹",
     code: "pt",
   },
-//   {
-//     id: "7",
-//     name: "Russian",
-//     flag: "🇷🇺",
-//     code: "ru",
-//   },
-//   {
-//     id: "8",
-//     name: "Japanese",
-//     flag: "🇯🇵",
-//     code: "ja",
-//   },
-//   {
-//     id: "9",
-//     name: "Korean",
-//     flag: "🇰🇷",
-//     code: "ko",
-//   },
-//   {
-//     id: "10",
-//     name: "Chinese",
-//     flag: "🇨🇳",
-//     code: "zh",
-//   },
+  {
+    id: "7",
+    name: "Russian",
+    flag: "🇷🇺",
+    code: "ru",
+  },
+  {
+    id: "8",
+    name: "Japanese",
+    flag: "🇯🇵",
+    code: "ja",
+  },
+  {
+    id: "9",
+    name: "Korean",
+    flag: "🇰🇷",
+    code: "ko",
+  },
+  {
+    id: "10",
+    name: "Chinese",
+    flag: "🇨🇳",
+    code: "zh",
+  },
 ];
 
 export default function LanguageSelect() {
-  const { changeLanguage, currentLanguage, isTranslating } = useTranslation();
+  const { changeLanguage, currentLanguage, isTranslating, translateBatch } =
+    useTranslation();
   const [selectedLanguage, setSelectedLanguage] = useState<string>("1");
 
   useEffect(() => {
@@ -100,7 +101,29 @@ export default function LanguageSelect() {
     try {
       const selected = languages.find((lang) => lang.id === selectedLanguage);
       if (selected) {
+        // Change language first
         await changeLanguage(selected.code);
+
+        // Preload common translations for the sign-up page
+        const commonTexts = [
+          "Create a new account\nwith your email",
+          "Full Name",
+          "Enter your full name",
+          "Email Address",
+          "example@gmail.com",
+          "Create Password",
+          "Enter your password",
+          "I agree to the",
+          "privacy policy",
+          "terms",
+          "Sign Up",
+          "Creating Account...",
+          "Already have an Account?",
+          "Sign In",
+        ];
+
+        // Batch translate common texts to cache them
+        await translateBatch(commonTexts);
 
         showToast(
           "success",
@@ -108,7 +131,10 @@ export default function LanguageSelect() {
           `${selected.name} has been set as your preferred language.`
         );
 
-        router.replace("/(auth)/sign-up" as any);
+        // Small delay to ensure translations are cached
+        setTimeout(() => {
+          router.replace("/(auth)/sign-up" as any);
+        }, 100);
       }
     } catch (error) {
       console.error("Language selection failed:", error);
@@ -127,7 +153,7 @@ export default function LanguageSelect() {
       />
       <View className="flex-1 px-5" style={{ marginTop: SCREEN_HEIGHT * 0.25 }}>
         {/* Language Options */}
-        <View className="flex-1">
+        <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
           {languages.map((language) => (
             <TouchableOpacity
               key={language.id}
@@ -169,7 +195,7 @@ export default function LanguageSelect() {
               </View>
             </TouchableOpacity>
           ))}
-        </View>
+        </ScrollView>
         {/* Confirm Button */}
         <View className="pb-5">
           <Button

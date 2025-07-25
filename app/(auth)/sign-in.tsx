@@ -7,10 +7,12 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { TranslatedText } from "@/components/ui/TranslatedText";
 import { AnimatedHeader } from "@/components/shared/AnimatedHeader";
 import { signInSchema, type SignInFormData } from "@/utils/validationSchemas";
 import { showToast } from "@/utils/toast";
 import { useAppStore } from "@/store/useAppStore";
+import { useTranslation } from "@/hooks/useTranslation";
 import { Lock, Mail } from "lucide-react-native";
 
 // Dev mode check - you can also use Constants.expoConfig.extra.isDev or similar
@@ -20,6 +22,7 @@ export default function SignInScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword] = useState(false);
   const { setUser } = useAppStore();
+  const { t } = useTranslation();
 
   const {
     control,
@@ -44,13 +47,18 @@ export default function SignInScreen() {
         id: "1",
         name: "Nayon",
         email: data.email,
+        isVerified: true,
       });
 
-      showToast("success", "Welcome back!", "Successfully signed in.");
+      showToast("success", t("Welcome back!"), t("Successfully signed in."));
       router.replace("/(main)" as any);
     } catch (error) {
       console.error("Sign In Failed:", error);
-      showToast("error", "Sign In Failed", "Please check your credentials.");
+      showToast(
+        "error",
+        t("Sign In Failed"),
+        t("Please check your credentials.")
+      );
     } finally {
       setIsLoading(false);
     }
@@ -61,11 +69,10 @@ export default function SignInScreen() {
   return (
     <SafeAreaView className="flex-1 bg-surface">
       <AnimatedHeader
-        title={`Login to your account${"\n"}with your email`}
+        title={t(`Login to your account${"\n"}with your email`)}
         titleClassName="text-black text-2xl font-semibold text-center leading-8"
         showBackButton={true}
       />
-
       <View className="flex-1 px-5" style={{ marginTop: SCREEN_HEIGHT * 0.25 }}>
         {/* Form */}
         <View className="flex-1">
@@ -81,19 +88,19 @@ export default function SignInScreen() {
             control={control}
             name="email"
             render={({ field: { onChange, value } }) => (
-              <View>
-                <Text className="text-black font-semibold mb-2">Email</Text>
-                <Input
-                  placeholder="Enter your email"
-                  value={value}
-                  onChangeText={onChange}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  icon={<Mail size={20} color="#4DBA28" />}
-                  iconPosition="left"
-                  error={errors.email?.message}
-                />
-              </View>
+              <Input
+                label={t("Email")}
+                placeholder={t("Enter your email")}
+                value={value}
+                onChangeText={onChange}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                icon={<Mail size={20} color="#4DBA28" />}
+                iconPosition="left"
+                error={
+                  errors.email?.message ? t(errors.email.message) : undefined
+                }
+              />
             )}
           />
 
@@ -103,14 +110,18 @@ export default function SignInScreen() {
             name="password"
             render={({ field: { onChange, value } }) => (
               <Input
-                label="Password"
-                placeholder="Enter your password"
+                label={t("Password")}
+                placeholder={t("Enter your password")}
                 value={value}
                 onChangeText={onChange}
                 icon={<Lock size={20} color="#4DBA28" />}
                 iconPosition="left"
                 secureTextEntry={!showPassword}
-                error={errors.password?.message}
+                error={
+                  errors.password?.message
+                    ? t(errors.password.message)
+                    : undefined
+                }
               />
             )}
           />
@@ -120,7 +131,7 @@ export default function SignInScreen() {
             className="self-end mb-10"
           >
             <Text className="text-primary-dark font-medium">
-              Forget password
+              <TranslatedText>Forget password</TranslatedText>
             </Text>
           </TouchableOpacity>
 
@@ -131,13 +142,17 @@ export default function SignInScreen() {
             size="md"
             textClassName="!text-black"
           >
-            Login
+            <TranslatedText>Login</TranslatedText>
           </Button>
 
           <View className="flex-row justify-center">
-            <Text className="text-gray-600">Don&apos;t have an account? </Text>
+            <Text className="text-gray-600">
+              <TranslatedText>Don&apos;t have an account? </TranslatedText>
+            </Text>
             <TouchableOpacity onPress={() => router.push("/(auth)/sign-up")}>
-              <Text className="text-primary-dark font-medium">Sign Up</Text>
+              <Text className="text-primary-dark font-medium">
+                <TranslatedText>Sign Up</TranslatedText>
+              </Text>
             </TouchableOpacity>
           </View>
         </View>

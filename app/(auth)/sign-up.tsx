@@ -19,7 +19,7 @@ import { Lock, Mail, User2 } from "lucide-react-native";
 
 export default function SignUpScreen() {
   const [isLoading, setIsLoading] = useState(false);
-  const { setUser } = useAppStore();
+  const { setSignUpEmail, setOtpType } = useAppStore();
   const { t } = useTranslation();
 
   const {
@@ -44,24 +44,21 @@ export default function SignUpScreen() {
   const onSubmit = async (data: SignUpFormData) => {
     setIsLoading(true);
     try {
-      // Simulate API call
+      // Simulate API call to create account
       await new Promise((resolve) => setTimeout(resolve, 2000));
-      // Mock successful registration
-      setUser({
-        id: "1",
-        name: data.name,
-        email: data.email,
-        createdAt: new Date().toISOString(),
-        isVerified: false,
-        role: "user",
-      });
+
+      // Store email and set OTP type for verification
+      setSignUpEmail(data.email);
+      setOtpType("signup");
 
       showToast(
         "success",
         t("Account Created!"),
-        t("Welcome to DESCUBRELO COLORADO.")
+        t("Please verify your email to continue.")
       );
-      router.replace("/(main)" as any);
+
+      // Navigate to OTP verification
+      router.push("/(auth)/verify-otp" as any);
     } catch (error) {
       console.error("Registration failed:", error);
       showToast(

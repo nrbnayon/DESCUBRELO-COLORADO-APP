@@ -1,12 +1,22 @@
 // app/(auth)/verify-otp.tsx
+"use client";
+
 import { useState, useEffect, useRef } from "react";
-import { View, Text, TouchableOpacity, TextInput } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  TextInput,
+  Dimensions,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
-import { ChevronLeft } from "lucide-react-native";
 import { Button } from "@/components/ui/Button";
+import { TranslatedText } from "@/components/ui/TranslatedText";
+import { AnimatedHeader } from "@/components/shared/AnimatedHeader";
 import { showToast } from "@/utils/toast";
 import { useAppStore } from "@/store/useAppStore";
+import { useTranslation } from "@/hooks/useTranslation";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function VerifyOTPScreen() {
@@ -14,24 +24,40 @@ export default function VerifyOTPScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [timer, setTimer] = useState(120);
   const [canResend, setCanResend] = useState(false);
-  const { forgotPasswordEmail, setOtpVerified } = useAppStore();
-
+  const { forgotPasswordEmail, signUpEmail, otpType, setOtpVerified, setUser } =
+    useAppStore();
+  const { t } = useTranslation();
   const inputRefs = useRef<(TextInput | null)[]>([]);
-  const intervalRef = useRef<number | null>(null);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  const currentEmail = otpType === "signup" ? signUpEmail : forgotPasswordEmail;
+
+  // Redirect if no email is set
+  useEffect(() => {
+    if (!currentEmail || !otpType) {
+      router.replace("/(auth)/sign-in");
+      return;
+    }
+  }, [currentEmail, otpType]);
 
   // Timer effect with persistence
   useEffect(() => {
     const startTimer = async () => {
       try {
         const currentTime = Date.now();
-        const savedStartTime = await AsyncStorage.getItem("otp_start_time");
-
+        const savedStartTime = await AsyncStorage.getItem(
+          `otp_start_time_${otpType}`
+        );
         let startTime: number;
+
         if (savedStartTime) {
-          startTime = parseInt(savedStartTime, 10);
+          startTime = Number.parseInt(savedStartTime, 10);
         } else {
           startTime = currentTime;
-          await AsyncStorage.setItem("otp_start_time", startTime.toString());
+          await AsyncStorage.setItem(
+            `otp_start_time_${otpType}`,
+            startTime.toString()
+          );
         }
 
         const elapsed = Math.floor((currentTime - startTime) / 1000);
@@ -71,7 +97,9 @@ export default function VerifyOTPScreen() {
       }
     };
 
-    startTimer();
+    if (otpType) {
+      startTimer();
+    }
 
     // Cleanup function
     return () => {
@@ -80,10 +108,13 @@ export default function VerifyOTPScreen() {
         intervalRef.current = null;
       }
     };
-  }, []);
+  }, [otpType]);
 
   const handleOtpChange = (value: string, index: number) => {
     if (value.length > 1) return;
+
+    // Only allow numbers
+    if (value && !/^\d$/.test(value)) return;
 
     const newOtp = [...otp];
     newOtp[index] = value;
@@ -104,7 +135,6 @@ export default function VerifyOTPScreen() {
   const handleResendOTP = async () => {
     try {
       setIsLoading(true);
-
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
@@ -116,7 +146,10 @@ export default function VerifyOTPScreen() {
 
       // Reset timer with new start time
       const newStartTime = Date.now();
-      await AsyncStorage.setItem("otp_start_time", newStartTime.toString());
+      await AsyncStorage.setItem(
+        `otp_start_time_${otpType}`,
+        newStartTime.toString()
+      );
       setTimer(120);
       setCanResend(false);
 
@@ -139,12 +172,12 @@ export default function VerifyOTPScreen() {
 
       showToast(
         "success",
-        "OTP Sent",
-        "A new verification code has been sent to your email."
+        t("OTP Sent"),
+        t("A new verification code has been sent to your email.")
       );
     } catch (error) {
       console.error("Resend OTP error:", error);
-      showToast("error", "Failed to resend", "Please try again later.");
+      showToast("error", t("Failed to resend"), t("Please try again later."));
     } finally {
       setIsLoading(false);
     }
@@ -156,8 +189,8 @@ export default function VerifyOTPScreen() {
     if (otpCode.length !== 4) {
       showToast(
         "error",
-        "Invalid OTP",
-        "Please enter the complete 4-digit code."
+        t("Invalid OTP"),
+        t("Please enter the complete 4-digit code.")
       );
       return;
     }
@@ -169,21 +202,46 @@ export default function VerifyOTPScreen() {
 
       // For demo purposes, accept any 4-digit code
       setOtpVerified(true);
+
       // Clear the timer storage and interval
-      await AsyncStorage.removeItem("otp_start_time");
+      await AsyncStorage.removeItem(`otp_start_time_${otpType}`);
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
         intervalRef.current = null;
       }
 
-      // Navigate to reset password
-      router.push("/reset-password");
+      if (otpType === "signup") {
+        // For signup, create user and go to main app
+        setUser({
+          id: "1",
+          name: "User",
+          email: currentEmail!,
+          createdAt: new Date().toISOString(),
+          isVerified: true,
+          role: "user",
+        });
+
+        showToast(
+          "success",
+          t("Email Verified!"),
+          t("Welcome to DESCUBRELO COLORADO.")
+        );
+        router.replace("/(main)" as any);
+      } else {
+        // For forgot password, go to reset password
+        showToast(
+          "success",
+          t("Email Verified!"),
+          t("You can now reset your password.")
+        );
+        router.push("/(auth)/reset-password" as any);
+      }
     } catch (error) {
       console.error("Verify OTP error:", error);
       showToast(
         "error",
-        "Invalid OTP",
-        "Please check your code and try again."
+        t("Invalid OTP"),
+        t("Please check your code and try again.")
       );
     } finally {
       setIsLoading(false);
@@ -196,28 +254,36 @@ export default function VerifyOTPScreen() {
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
-  return (
-    <SafeAreaView className='flex-1 bg-surface'>
-      <View className='flex-1 px-5'>
-        {/* Header */}
-        <View className='flex-row items-center pt-4 pb-8'>
-          <TouchableOpacity onPress={() => router.back()} className='mr-2'>
-            <ChevronLeft size={24} color='#1F2937' />
-          </TouchableOpacity>
-          <Text className='text-dark text-lg font-medium'>Forget Password</Text>
-        </View>
+  const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 
+  if (!currentEmail || !otpType) {
+    return null;
+  }
+
+  return (
+    <SafeAreaView className="flex-1 bg-surface">
+      <AnimatedHeader
+        title={t("Verify Your Email")}
+        titleClassName="text-black text-2xl font-semibold text-center leading-8"
+        showBackButton={true}
+      />
+
+      <View className="flex-1 px-5" style={{ marginTop: SCREEN_HEIGHT * 0.25 }}>
         {/* Content */}
-        <View className='flex-1 justify-center'>
-          <Text className='text-dark text-base leading-6 mb-4'>
-            Code has been send to{" "}
-            <Text className='text-primary font-medium'>
-              {forgotPasswordEmail || "infogma@gmail.com"}
+        <View className="flex-1">
+          {/* Description */}
+          <Text className="text-black text-base leading-6 mb-8 text-center">
+            <TranslatedText>
+              We sent a 4 digit code to your email
+            </TranslatedText>
+            {"\n"}
+            <Text className="text-primary-dark font-medium">
+              {currentEmail}
             </Text>
           </Text>
 
           {/* OTP Input */}
-          <View className='flex-row justify-between mb-8 mt-8'>
+          <View className="flex-row justify-between mb-8 mt-8">
             {otp.map((digit, index) => (
               <TextInput
                 key={index}
@@ -229,39 +295,52 @@ export default function VerifyOTPScreen() {
                 onKeyPress={({ nativeEvent }) =>
                   handleKeyPress(nativeEvent.key, index)
                 }
-                className='w-16 h-16 border border-gray-300 rounded-md text-center text-2xl font-bold bg-white'
+                className={`w-16 h-16 border-2 rounded-lg text-center text-2xl font-bold bg-white ${
+                  digit
+                    ? "border-primary"
+                    : otp.some((d) => d !== "") && !digit
+                      ? "border-red-300"
+                      : "border-gray-300"
+                }`}
                 maxLength={1}
-                keyboardType='numeric'
+                keyboardType="numeric"
                 autoFocus={index === 0}
+                placeholderTextColor="#999"
               />
             ))}
           </View>
 
           {/* Resend Timer */}
-          <View className='items-center mb-8'>
+          <View className="items-center mb-8">
+            <Text className="text-black text-base mb-2">
+              <TranslatedText>
+                Didn&apos;t get the verification code?
+              </TranslatedText>
+            </Text>
             {canResend ? (
               <TouchableOpacity onPress={handleResendOTP} disabled={isLoading}>
-                <Text className='text-primary font-medium text-base'>
-                  Resend Code
+                <Text className="text-primary-dark font-medium text-base">
+                  <TranslatedText>Resend code</TranslatedText>
                 </Text>
               </TouchableOpacity>
             ) : (
-              <Text className='text-gray-500 text-base'>
-                Resend Code in{" "}
-                <Text className='text-primary'>{formatTime(timer)}</Text>
+              <Text className="text-primary-dark text-base">
+                <TranslatedText>Resend in</TranslatedText> {formatTime(timer)}
               </Text>
             )}
           </View>
         </View>
 
         {/* Bottom Button */}
-        <View className='pb-8'>
+        <View className="pb-8">
           <Button
             onPress={handleVerifyOTP}
             loading={isLoading}
-            className='w-full'
+            className="w-full"
+            size="md"
+            textClassName="!text-black"
           >
-            Verify
+            <TranslatedText>Verify Email</TranslatedText>
           </Button>
         </View>
       </View>

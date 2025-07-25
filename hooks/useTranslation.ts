@@ -1,5 +1,4 @@
-"use client";
-
+// hooks\useTranslation.ts
 import { useState, useCallback, useRef } from "react";
 import { translationService } from "@/services/translationService";
 import { useAppStore } from "@/store/useAppStore";
@@ -157,11 +156,33 @@ export const useTranslation = (): UseTranslationReturn => {
     async (languageCode: string): Promise<void> => {
       try {
         setIsTranslating(true);
+
+        // Update settings first
         await updateSettings({ language: languageCode });
 
         // Clear component cache when language changes
         translationCache.clear();
         pendingTranslations.current.clear();
+
+        // If not English, preload some common translations
+        if (languageCode !== "en") {
+          const commonTexts = [
+            "Welcome",
+            "Loading...",
+            "Error",
+            "Success",
+            "Cancel",
+            "Confirm",
+            "Continue",
+            "Back",
+          ];
+
+          try {
+            await translationService.translateBatch(commonTexts, languageCode);
+          } catch (error) {
+            console.error("Failed to preload common translations:", error);
+          }
+        }
       } catch (error) {
         console.error("Error changing language:", error);
       } finally {

@@ -123,7 +123,9 @@ interface AppState {
   unreadNotificationCount: number;
   // Authentication flow
   forgotPasswordEmail: string | null;
+  signUpEmail: string | null;
   otpVerified: boolean;
+  otpType: "signup" | "forgot-password" | null;
   // App settings
   settings: AppSettings;
   // Error handling
@@ -146,7 +148,9 @@ interface AppState {
   clearAllNotifications: () => void;
   // Authentication flow actions
   setForgotPasswordEmail: (email: string | null) => void;
+  setSignUpEmail: (email: string | null) => void;
   setOtpVerified: (verified: boolean) => void;
+  setOtpType: (type: "signup" | "forgot-password" | null) => void;
   // Settings actions
   updateSettings: (settings: Partial<AppSettings>) => void;
   // Utility actions
@@ -184,7 +188,9 @@ export const useAppStore = create<AppState>()(
       notifications: [],
       unreadNotificationCount: 0,
       forgotPasswordEmail: null,
+      signUpEmail: null,
       otpVerified: false,
+      otpType: null,
       settings: defaultSettings,
       error: null,
 
@@ -207,7 +213,9 @@ export const useAppStore = create<AppState>()(
           isAuthenticated: false,
           isLoading: false,
           forgotPasswordEmail: null,
+          signUpEmail: null,
           otpVerified: false,
+          otpType: null,
           error: null,
           // Keep notifications and settings on logout
         });
@@ -328,8 +336,16 @@ export const useAppStore = create<AppState>()(
         set({ forgotPasswordEmail: email });
       },
 
+      setSignUpEmail: (email: string | null) => {
+        set({ signUpEmail: email });
+      },
+
       setOtpVerified: (verified: boolean) => {
         set({ otpVerified: verified });
+      },
+
+      setOtpType: (type: "signup" | "forgot-password" | null) => {
+        set({ otpType: type });
       },
 
       // Settings actions
@@ -360,7 +376,9 @@ export const useAppStore = create<AppState>()(
           notifications: [],
           unreadNotificationCount: 0,
           forgotPasswordEmail: null,
+          signUpEmail: null,
           otpVerified: false,
+          otpType: null,
           settings: defaultSettings,
           error: null,
         });
@@ -369,7 +387,7 @@ export const useAppStore = create<AppState>()(
     {
       name: "app-storage",
       storage: createJSONStorage(() => storage),
-      version: 2,
+      version: 3,
       // Specify what to persist
       partialize: (state) => ({
         user: state.user,
@@ -396,6 +414,13 @@ export const useAppStore = create<AppState>()(
             ...persistedState,
             settings: defaultSettings,
             unreadNotificationCount: 0,
+          };
+        }
+        if (version === 2) {
+          return {
+            ...persistedState,
+            signUpEmail: null,
+            otpType: null,
           };
         }
         return persistedState;
