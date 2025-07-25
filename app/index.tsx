@@ -40,7 +40,7 @@ export default function IndexScreen() {
   };
 
   const handleCreateAccount = () => {
-    router.push("/(auth)/sign-up" as any);
+    router.push("/(auth)/language-select" as any);
   };
 
   const handleLogin = () => {

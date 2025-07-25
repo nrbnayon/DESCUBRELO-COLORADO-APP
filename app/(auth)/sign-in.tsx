@@ -81,7 +81,7 @@ export default function SignInScreen() {
             control={control}
             name="email"
             render={({ field: { onChange, value } }) => (
-              <View className="mb-4">
+              <View>
                 <Text className="text-black font-semibold mb-2">Email</Text>
                 <Input
                   placeholder="Enter your email"

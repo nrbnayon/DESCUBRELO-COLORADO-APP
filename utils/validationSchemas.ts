@@ -43,7 +43,7 @@ export const signUpSchema = z.object({
       // Check for no spaces
       return !password.includes(" ");
     }, "Password cannot contain spaces")
-    
+
     .refine((password) => {
       // Check for no common patterns
       const commonPatterns = [
@@ -76,6 +76,13 @@ export const resetPasswordSchema = z
     message: "Passwords don't match",
     path: ["confirmPassword"],
   });
+
+// Language selection schema
+export const languageSelectSchema = z.object({
+  languageId: z.string().min(1, "Please select a language"),
+  languageCode: z.string().min(1, "Language code is required"),
+  languageName: z.string().min(1, "Language name is required"),
+});
 
 // Password strength calculation utility
 export const calculatePasswordStrength = (password: string) => {
@@ -152,3 +159,4 @@ export type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
 export type SignInFormData = z.infer<typeof signInSchema>;
 export type SignUpFormData = z.infer<typeof signUpSchema>;
 export type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
+export type LanguageSelectFormData = z.infer<typeof languageSelectSchema>;

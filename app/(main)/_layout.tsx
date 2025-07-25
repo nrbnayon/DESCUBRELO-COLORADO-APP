@@ -1,3 +1,4 @@
+// app\(main)\_layout.tsx
 import { Tabs } from "expo-router";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { Colors } from "@/constants/Colors";
