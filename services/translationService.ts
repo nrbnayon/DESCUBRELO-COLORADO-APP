@@ -3,7 +3,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 // Google Translate API configuration
 const GOOGLE_TRANSLATE_API_KEY =
   process.env.EXPO_PUBLIC_GOOGLE_TRANSLATE_API_KEY ||
-  "AIzaSyC5wfq4QCcnPJIDW5_m6QB72nlrUkjTYAw";
+  "your-EXPO_PUBLIC_GOOGLE_TRANSLATE_API_KEY-here";
 const GOOGLE_TRANSLATE_URL =
   "https://translation.googleapis.com/language/translate/v2";
 
