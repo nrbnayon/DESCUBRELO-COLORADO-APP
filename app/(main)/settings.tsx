@@ -18,10 +18,11 @@ import {
   User,
   Settings as SettingsIcon,
 } from "lucide-react-native";
+import { router } from "expo-router";
 
 export default function SettingsScreen() {
   const { currentLanguage } = useTranslation();
-  const { user, logout, theme, setTheme } = useAppStore();
+  const { user, logout, setHasSeenOnboarding, theme, setTheme } = useAppStore();
   const [showLanguageSelector, setShowLanguageSelector] = useState(false);
 
   const getCurrentLanguageName = () => {
@@ -95,7 +96,9 @@ export default function SettingsScreen() {
   ];
 
   const handleLogout = () => {
-    logout();
+     logout();
+     setHasSeenOnboarding(false);
+     router.replace("/");
   };
 
   return (

@@ -8,7 +8,7 @@ import {
   Wine,
   BottleWine,
 } from "lucide-react-native";
-import { getCardShadow } from "@/utils/shadows";
+import { shadows } from "@/utils/shadows";
 
 interface OfferCardProps {
   id: string;
@@ -70,93 +70,93 @@ export function OfferCard({
 
   return (
     <View
-      className='bg-white rounded-md overflow-hidden'
+      className="bg-white rounded-md overflow-hidden"
       style={[
         {
           marginBottom: 16,
         },
-        getCardShadow("sm"),
+        shadows.lg,
       ]}
     >
       {/* Image Section */}
-      <View className='relative'>
+      <View className="relative">
         <Image
           source={{ uri: image }}
-          className='w-full h-64'
-          resizeMode='cover'
+          className="w-full h-64"
+          resizeMode="cover"
         />
 
         {/* Badge */}
         <View
           className={`absolute top-4 left-4 ${getBadgeColor()} rounded-full px-3 py-1 flex-row items-center`}
         >
-          <View className='mr-1'>{getBadgeIcon()}</View>
-          <Text className='text-white text-sm font-medium'>
+          <View className="mr-1">{getBadgeIcon()}</View>
+          <Text className="text-white text-sm font-medium">
             {badge || type.charAt(0).toUpperCase() + type.slice(1)}
           </Text>
         </View>
 
         {/* Days Left */}
-        <View className='absolute bottom-4 left-4 bg-black bg-opacity-60 rounded-full px-3 py-1 flex-row items-center'>
-          <Clock size={14} color='white' />
-          <Text className='text-white text-sm font-medium ml-1'>
+        <View className="absolute bottom-4 left-4 bg-black bg-opacity-60 rounded-full px-3 py-1 flex-row items-center">
+          <Clock size={14} color="white" />
+          <Text className="text-white text-sm font-medium ml-1">
             {daysLeft} Days left
           </Text>
         </View>
       </View>
 
       {/* Content Section */}
-      <View className='p-4'>
+      <View className="p-4">
         {/* Title and Rating */}
-        <View className='flex-row items-start justify-between mb-2'>
-          <Text className='text-lg font-semibold text-gray-800 flex-1 mr-2'>
+        <View className="flex-row items-start justify-between mb-2">
+          <Text className="text-lg font-semibold text-gray-800 flex-1 mr-2">
             {title}
           </Text>
-          <View className='flex-row items-center'>
-            <Star size={16} color='#FFD700' fill='#FFD700' />
-            <Text className='text-sm text-gray-600 ml-1'>{rating}</Text>
+          <View className="flex-row items-center">
+            <Star size={16} color="#FFD700" fill="#FFD700" />
+            <Text className="text-sm text-gray-600 ml-1">{rating}</Text>
           </View>
         </View>
 
         {/* Description */}
-        <Text className='text-sm text-gray-600 mb-3 leading-5'>
+        <Text className="text-sm text-gray-600 mb-3 leading-5">
           {description}
         </Text>
 
         {/* Location */}
-        <View className='flex-row items-center mb-4'>
-          <MapPin size={14} color='#9CA3AF' />
-          <Text className='text-sm text-gray-500 ml-1'>{location}</Text>
+        <View className="flex-row items-center mb-4">
+          <MapPin size={14} color="#9CA3AF" />
+          <Text className="text-sm text-gray-500 ml-1">{location}</Text>
         </View>
 
         {/* Pricing */}
-        <View className='flex-row items-center justify-between mb-4'>
+        <View className="flex-row items-center justify-between mb-4">
           <View>
             {originalPrice !== currentPrice && (
-              <Text className='text-sm text-gray-400 line-through'>
+              <Text className="text-sm text-gray-400 line-through">
                 ${originalPrice}
               </Text>
             )}
-            <Text className='text-xl font-bold text-primary'>
+            <Text className="text-xl font-bold text-primary">
               ${currentPrice}
             </Text>
           </View>
         </View>
 
         {/* Action Buttons */}
-        <View className='flex-row' style={{ gap: 12 }}>
+        <View className="flex-row" style={{ gap: 12 }}>
           <TouchableOpacity
             onPress={onExpressInterest}
-            className='flex-1 bg-primary rounded-md py-3 items-center'
+            className="flex-1 bg-primary rounded-md py-3 items-center"
           >
-            <Text className='text-white font-semibold'>Express Interest</Text>
+            <Text className="text-white font-semibold">Express Interest</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             onPress={onViewDetails}
-            className='flex-1 border border-primary rounded-md py-3 items-center'
+            className="flex-1 border border-primary rounded-md py-3 items-center"
           >
-            <Text className='text-primary font-semibold'>View Details</Text>
+            <Text className="text-primary font-semibold">View Details</Text>
           </TouchableOpacity>
         </View>
       </View>
