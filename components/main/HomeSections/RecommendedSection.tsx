@@ -90,7 +90,7 @@ export const RecommendedSection: React.FC<RecommendedSectionProps> = ({
           paddingHorizontal: 20,
           paddingRight: 40, // Extra padding for last item
         }}
-        style={{ flexGrow: 0 }} // Prevent scroll view from taking full height
+        style={{ flexGrow: 0 }} // Prevent scroll view from taking 
       >
         {items.map(renderRecommendedItem)}
       </ScrollView>
