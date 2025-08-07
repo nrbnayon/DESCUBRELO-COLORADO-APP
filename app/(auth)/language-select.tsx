@@ -1,6 +1,12 @@
 // app/(auth)/language-select.tsx
 import { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity, Dimensions, ScrollView } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Dimensions,
+  ScrollView,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { Button } from "@/components/ui/Button";
@@ -29,54 +35,6 @@ const languages: Language[] = [
     name: "Spanish",
     flag: "🇪🇸",
     code: "es",
-  },
-  {
-    id: "3",
-    name: "French",
-    flag: "🇫🇷",
-    code: "fr",
-  },
-  {
-    id: "4",
-    name: "German",
-    flag: "🇩🇪",
-    code: "de",
-  },
-  {
-    id: "5",
-    name: "Italian",
-    flag: "🇮🇹",
-    code: "it",
-  },
-  {
-    id: "6",
-    name: "Portuguese",
-    flag: "🇵🇹",
-    code: "pt",
-  },
-  {
-    id: "7",
-    name: "Russian",
-    flag: "🇷🇺",
-    code: "ru",
-  },
-  {
-    id: "8",
-    name: "Japanese",
-    flag: "🇯🇵",
-    code: "ja",
-  },
-  {
-    id: "9",
-    name: "Korean",
-    flag: "🇰🇷",
-    code: "ko",
-  },
-  {
-    id: "10",
-    name: "Chinese",
-    flag: "🇨🇳",
-    code: "zh",
   },
 ];
 
@@ -145,15 +103,15 @@ export default function LanguageSelect() {
   const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 
   return (
-    <SafeAreaView className="flex-1 bg-surface">
+    <SafeAreaView className='flex-1 bg-surface'>
       <AnimatedHeader
         title={`Select your preferred${"\n"}language`}
-        titleClassName="text-black text-2xl font-semibold text-center leading-8"
+        titleClassName='text-black text-2xl font-semibold text-center leading-8'
         showBackButton={true}
       />
-      <View className="flex-1 px-5" style={{ marginTop: SCREEN_HEIGHT * 0.25 }}>
+      <View className='flex-1 px-5' style={{ marginTop: SCREEN_HEIGHT * 0.25 }}>
         {/* Language Options */}
-        <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+        <ScrollView className='flex-1' showsVerticalScrollIndicator={false}>
           {languages.map((language) => (
             <TouchableOpacity
               key={language.id}
@@ -165,10 +123,10 @@ export default function LanguageSelect() {
               }`}
               activeOpacity={0.7}
             >
-              <View className="flex-row items-center flex-1">
+              <View className='flex-row items-center flex-1'>
                 {/* Flag */}
-                <View className="w-8 h-8 rounded-full bg-gray-100 items-center justify-center mr-3">
-                  <Text className="text-lg">{language.flag}</Text>
+                <View className='w-8 h-8 rounded-full bg-gray-100 items-center justify-center mr-3'>
+                  <Text className='text-lg'>{language.flag}</Text>
                 </View>
                 {/* Language Name */}
                 <TranslatedText
@@ -190,20 +148,20 @@ export default function LanguageSelect() {
                 }`}
               >
                 {selectedLanguage === language.id && (
-                  <Check size={14} color="white" strokeWidth={3} />
+                  <Check size={14} color='white' strokeWidth={3} />
                 )}
               </View>
             </TouchableOpacity>
           ))}
         </ScrollView>
         {/* Confirm Button */}
-        <View className="pb-5">
+        <View className='pb-5'>
           <Button
             onPress={onConfirm}
             loading={isTranslating}
-            className="w-full"
-            size="md"
-            textClassName="!text-black"
+            className='w-full'
+            size='md'
+            textClassName='!text-black'
             disabled={!selectedLanguage}
           >
             <TranslatedText>Confirm</TranslatedText>

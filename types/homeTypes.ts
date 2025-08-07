@@ -1,12 +1,13 @@
 // types/homeTypes.ts
+import { ImageSourcePropType } from "react-native";
 
 // Base Category interface
 export interface Category {
   id: string;
   name: string;
   icon: string;
-  image?: any; 
-  imageUrl?: string; 
+  image?: ImageSourcePropType;
+  imageUrl?: string;
   description?: string;
   color?: string;
   isActive?: boolean;
@@ -14,29 +15,52 @@ export interface Category {
   metadata?: Record<string, any>;
 }
 
-// Explore item interface
-export interface ExploreItem {
-  id: string;
-  title: string;
-  eventCount: number;
-  image: any;
-  category: string;
-  description?: string;
+
+interface AddressLocation {
+  address?: string;
   location?: string;
-  rating?: number;
+  latitude?: number;
+  longitude?: number;
+  [key: string]: unknown;
 }
 
-// Recommended item interface
-export interface RecommendedItem {
+interface SocialMediaLinks {
+  facebook?: string;
+  instagram?: string;
+  twitter?: string;
+  youtube?: string;
+  linkedin?: string;
+  [key: string]: unknown;
+}
+
+// all app will follow same data structure 
+export interface AllDataStructure extends AddressLocation {
   id: string;
-  title: string;
-  dateRange: string;
-  image: any;
-  description?: string;
+  title?: string;
+  name?: string;
+  address?: string;
   location?: string;
-  price?: number;
+  latitude?: number;
+  longitude?: number;
+  eventCount?: number;
+  type?: string;
+  description?: string;
   rating?: number;
+  dateRange?: string;
+  images?: (string | ImageSourcePropType)[];
   isFeatured?: boolean;
+  phone?: string;
+  socialLinks?: SocialMediaLinks;
+  openingHours?: string;
+  priceLevel?: number;
+  categories?: string[];
+  offlineSupported?: boolean;
+  offlineData?: {
+    mapTiles?: boolean;
+    detailsAvailable?: boolean;
+    navigationSupported?: boolean;
+  };
+  [key: string]: any;
 }
 
 // Hero slide interface
@@ -75,18 +99,20 @@ export interface CategoryItemProps {
 }
 
 export interface ExploreSectionProps {
-  items: ExploreItem[];
+  items: AllDataStructure[];
   title?: string;
-  onItemPress?: (item: ExploreItem) => void;
+  onItemPress?: (item: AllDataStructure) => void;
   showTitle?: boolean;
   columns?: number;
   containerClassName?: string;
+  showSeeAll?: boolean;
+  onSeeAllExplore?: () => void;
 }
 
 export interface RecommendedSectionProps {
-  items: RecommendedItem[];
+  items: AllDataStructure[];
   title?: string;
-  onItemPress?: (item: RecommendedItem) => void;
+  onItemPress?: (item: AllDataStructure) => void;
   showTitle?: boolean;
   showSeeAll?: boolean;
   onSeeAllPress?: () => void;
@@ -102,13 +128,4 @@ export interface HeroSliderProps {
   containerClassName?: string;
 }
 
-// Utility types
-export type CategoryLayoutType = "grid" | "list" | "carousel";
-export type CategoryDisplayMode = "compact" | "detailed" | "minimal";
 
-// Animation configuration
-export interface CategoryAnimationConfig {
-  enabled: boolean;
-  duration: number;
-  type: "spring" | "easeInEaseOut" | "linear";
-}

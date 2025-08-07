@@ -1,20 +1,24 @@
-// store\useAppStore.ts
+// store/useAppStore.ts
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Platform } from "react-native";
+import { User } from "@/types/userTypes";
+import { AppSettings } from "@/types/appSettings";
+import { NotificationTypes } from "@/types/allNotificationTypes";
 
 // Custom storage for cross-platform compatibility
 const storage = {
   getItem: async (name: string): Promise<string | null> => {
     try {
-      if (
-        Platform.OS === "web" &&
-        typeof window !== "undefined" &&
-        window.localStorage
-      ) {
-        return localStorage.getItem(name);
+      if (Platform.OS === "web") {
+        // For web platform, use localStorage
+        if (typeof window !== "undefined" && window.localStorage) {
+          return localStorage.getItem(name);
+        }
+        return null;
       }
+      // For native platforms, use AsyncStorage
       return await AsyncStorage.getItem(name);
     } catch (error) {
       console.error(`Error getting item ${name}:`, error);
@@ -23,13 +27,13 @@ const storage = {
   },
   setItem: async (name: string, value: string): Promise<void> => {
     try {
-      if (
-        Platform.OS === "web" &&
-        typeof window !== "undefined" &&
-        window.localStorage
-      ) {
-        localStorage.setItem(name, value);
+      if (Platform.OS === "web") {
+        // For web platform, use localStorage
+        if (typeof window !== "undefined" && window.localStorage) {
+          localStorage.setItem(name, value);
+        }
       } else {
+        // For native platforms, use AsyncStorage
         await AsyncStorage.setItem(name, value);
       }
     } catch (error) {
@@ -38,13 +42,13 @@ const storage = {
   },
   removeItem: async (name: string): Promise<void> => {
     try {
-      if (
-        Platform.OS === "web" &&
-        typeof window !== "undefined" &&
-        window.localStorage
-      ) {
-        localStorage.removeItem(name);
+      if (Platform.OS === "web") {
+        // For web platform, use localStorage
+        if (typeof window !== "undefined" && window.localStorage) {
+          localStorage.removeItem(name);
+        }
       } else {
+        // For native platforms, use AsyncStorage
         await AsyncStorage.removeItem(name);
       }
     } catch (error) {
@@ -53,84 +57,22 @@ const storage = {
   },
 };
 
-// Enhanced User interface
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  balance?: number;
-  avatar?: string;
-  firstName?: string;
-  lastName?: string;
-  phone?: string;
-  dateOfBirth?: string;
-  address?: {
-    street?: string;
-    city?: string;
-    state?: string;
-    zipCode?: string;
-    country?: string;
-  };
-  preferences?: {
-    language?: string;
-    currency?: string;
-    notifications?: boolean;
-  };
-  createdAt?: string;
-  updatedAt?: string;
-  isVerified?: boolean;
-  role?: "user" | "admin" | "moderator";
-}
-
-// Enhanced Notification interface
-interface Notification {
-  id: string;
-  title: string;
-  message: string;
-  time: string;
-  type: "info" | "success" | "warning" | "error";
-  read: boolean;
-  priority?: "low" | "medium" | "high";
-  actionUrl?: string;
-  metadata?: Record<string, any>;
-}
-
-// Application settings interface
-interface AppSettings {
-  language: string;
-  currency: string;
-  timezone: string;
-  dateFormat: string;
-  notifications: {
-    push: boolean;
-    email: boolean;
-    sms: boolean;
-    marketing: boolean;
-  };
-}
-
 // Main AppState interface
 interface AppState {
-  // User state
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  // UI state
   theme: "light" | "dark" | "system";
   hasSeenOnboarding: boolean;
-  // Notifications
-  notifications: Notification[];
+  notifications: NotificationTypes[];
   unreadNotificationCount: number;
-  // Authentication flow
+  favoriteItems: string[];
   forgotPasswordEmail: string | null;
   signUpEmail: string | null;
   otpVerified: boolean;
   otpType: "signup" | "forgot-password" | null;
-  // App settings
   settings: AppSettings;
-  // Error handling
   error: string | null;
-  // User Actions
   login: (user: User) => void;
   logout: () => void;
   setUser: (user: User | null) => void;
@@ -141,11 +83,16 @@ interface AppState {
   setHasSeenOnboarding: (value: boolean) => void;
   setError: (error: string | null) => void;
   // Notification Actions
-  addNotification: (notification: Omit<Notification, "id">) => void;
+  addNotification: (notification: NotificationTypes) => void;
   markNotificationAsRead: (id: string) => void;
   markAllNotificationsAsRead: () => void;
   removeNotification: (id: string) => void;
   clearAllNotifications: () => void;
+  // Favorite Actions
+  addToFavorites: (itemId: string) => void;
+  removeFromFavorites: (itemId: string) => void;
+  toggleFavorite: (itemId: string) => void;
+  isFavorite: (itemId: string) => boolean;
   // Authentication flow actions
   setForgotPasswordEmail: (email: string | null) => void;
   setSignUpEmail: (email: string | null) => void;
@@ -171,11 +118,6 @@ const defaultSettings: AppSettings = {
   },
 };
 
-// Generate unique ID for notifications
-const generateId = (): string => {
-  return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-};
-
 export const useAppStore = create<AppState>()(
   persist(
     (set, get) => ({
@@ -187,6 +129,7 @@ export const useAppStore = create<AppState>()(
       hasSeenOnboarding: false,
       notifications: [],
       unreadNotificationCount: 0,
+      favoriteItems: [],
       forgotPasswordEmail: null,
       signUpEmail: null,
       otpVerified: false,
@@ -263,34 +206,53 @@ export const useAppStore = create<AppState>()(
       setHasSeenOnboarding: (value) => set({ hasSeenOnboarding: value }),
 
       // Notification Actions
-      addNotification: (notification: Omit<Notification, "id">) => {
-        const newNotification: Notification = {
-          ...notification,
-          id: generateId(),
-        };
+      addNotification: (notification: NotificationTypes) => {
         const currentNotifications = get().notifications;
-        const updatedNotifications = [newNotification, ...currentNotifications];
+        const updatedNotifications = [notification, ...currentNotifications];
+        const wasRead = notification.isRead || notification.read || false;
+
         set({
           notifications: updatedNotifications,
-          unreadNotificationCount: get().unreadNotificationCount + 1,
+          unreadNotificationCount: wasRead
+            ? get().unreadNotificationCount
+            : get().unreadNotificationCount + 1,
         });
       },
 
       markNotificationAsRead: (id: string) => {
         const currentNotifications = get().notifications;
+        const targetNotification = currentNotifications.find(
+          (n) => n.id === id
+        );
+
+        if (!targetNotification) return;
+
         const updatedNotifications = currentNotifications.map((notification) =>
           notification.id === id
-            ? { ...notification, read: true }
+            ? {
+                ...notification,
+                isRead: !notification.isRead,
+                read: !notification.isRead,
+              }
             : notification
         );
-        const wasUnread = currentNotifications.find(
-          (n) => n.id === id && !n.read
-        );
+
+        // Calculate unread count change
+        let countChange = 0;
+        if (!targetNotification.isRead) {
+          // Was unread, now read
+          countChange = -1;
+        } else {
+          // Was read, now unread
+          countChange = 1;
+        }
+
         set({
           notifications: updatedNotifications,
-          unreadNotificationCount: wasUnread
-            ? Math.max(0, get().unreadNotificationCount - 1)
-            : get().unreadNotificationCount,
+          unreadNotificationCount: Math.max(
+            0,
+            get().unreadNotificationCount + countChange
+          ),
         });
       },
 
@@ -298,6 +260,7 @@ export const useAppStore = create<AppState>()(
         const updatedNotifications = get().notifications.map(
           (notification) => ({
             ...notification,
+            isRead: true,
             read: true,
           })
         );
@@ -318,7 +281,7 @@ export const useAppStore = create<AppState>()(
         set({
           notifications: updatedNotifications,
           unreadNotificationCount:
-            notificationToRemove && !notificationToRemove.read
+            notificationToRemove && !notificationToRemove.isRead
               ? Math.max(0, get().unreadNotificationCount - 1)
               : get().unreadNotificationCount,
         });
@@ -329,6 +292,36 @@ export const useAppStore = create<AppState>()(
           notifications: [],
           unreadNotificationCount: 0,
         });
+      },
+
+      // Favorite Actions
+      addToFavorites: (itemId: string) => {
+        const currentFavorites = get().favoriteItems;
+        if (!currentFavorites.includes(itemId)) {
+          set({
+            favoriteItems: [...currentFavorites, itemId],
+          });
+        }
+      },
+
+      removeFromFavorites: (itemId: string) => {
+        const currentFavorites = get().favoriteItems;
+        set({
+          favoriteItems: currentFavorites.filter((id) => id !== itemId),
+        });
+      },
+
+      toggleFavorite: (itemId: string) => {
+        const currentFavorites = get().favoriteItems;
+        if (currentFavorites.includes(itemId)) {
+          get().removeFromFavorites(itemId);
+        } else {
+          get().addToFavorites(itemId);
+        }
+      },
+
+      isFavorite: (itemId: string) => {
+        return get().favoriteItems.includes(itemId);
       },
 
       // Authentication flow actions
@@ -395,6 +388,7 @@ export const useAppStore = create<AppState>()(
         theme: state.theme,
         notifications: state.notifications,
         unreadNotificationCount: state.unreadNotificationCount,
+        favoriteItems: state.favoriteItems,
         settings: state.settings,
         hasSeenOnboarding: state.hasSeenOnboarding,
         // Don't persist loading states, errors, or temporary auth flow data
@@ -414,6 +408,7 @@ export const useAppStore = create<AppState>()(
             ...persistedState,
             settings: defaultSettings,
             unreadNotificationCount: 0,
+            favoriteItems: [],
           };
         }
         if (version === 2) {
@@ -421,6 +416,7 @@ export const useAppStore = create<AppState>()(
             ...persistedState,
             signUpEmail: null,
             otpType: null,
+            favoriteItems: persistedState.favoriteItems || [],
           };
         }
         return persistedState;
@@ -442,21 +438,19 @@ export const useTheme = () =>
     theme: state.theme,
     setTheme: state.setTheme,
   }));
-export const useNotifications = () =>
-  useAppStore((state) => ({
-    notifications: state.notifications,
-    unreadCount: state.unreadNotificationCount,
-    addNotification: state.addNotification,
-    markAsRead: state.markNotificationAsRead,
-    markAllAsRead: state.markAllNotificationsAsRead,
-    removeNotification: state.removeNotification,
-    clearAll: state.clearAllNotifications,
-  }));
 export const useSettings = () =>
   useAppStore((state) => ({
     settings: state.settings,
     updateSettings: state.updateSettings,
   }));
+export const useFavoritesStore = () =>
+  useAppStore((state) => ({
+    favoriteItems: state.favoriteItems,
+    addToFavorites: state.addToFavorites,
+    removeFromFavorites: state.removeFromFavorites,
+    toggleFavorite: state.toggleFavorite,
+    isFavorite: state.isFavorite,
+  }));
 
 // Type exports for external use
-export type { User, Notification, AppSettings, AppState };
+export type { User, NotificationTypes, AppSettings, AppState };

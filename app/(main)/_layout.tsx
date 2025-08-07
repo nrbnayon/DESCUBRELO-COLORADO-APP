@@ -1,14 +1,18 @@
-// app\(main)\_layout.tsx
 import { Tabs } from "expo-router";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { Colors } from "@/constants/Colors";
-import { Home, User, Settings } from "lucide-react-native";
-import { View } from "react-native";
+import {
+  MapPinned,
+  Settings,
+  MessageCircle,
+  Star,
+  House,
+} from "lucide-react-native";
+import { View, TouchableOpacity } from "react-native";
 
 export default function MainLayout() {
   const colorScheme = useColorScheme();
 
-  // Solution 1: Always render background to maintain consistent layout
   const TabIcon = ({
     Icon,
     color,
@@ -25,12 +29,10 @@ export default function MainLayout() {
         style={{
           backgroundColor: focused ? "#94E474" : "transparent",
           borderRadius: 20,
-          // Keep consistent dimensions for all states
           width: 40,
           height: 40,
           justifyContent: "center",
           alignItems: "center",
-          // Add border to maintain visual consistency
           borderWidth: focused ? 0 : 1,
           borderColor: "transparent",
         }}
@@ -40,16 +42,27 @@ export default function MainLayout() {
     );
   };
 
+  // Custom tab button component to remove press effects
+  const CustomTabButton = (props: any) => {
+    return (
+      <TouchableOpacity
+        {...props}
+        activeOpacity={1} // This removes the opacity change on press
+        style={[props.style, { flex: 1 }]}
+      />
+    );
+  };
+
   return (
     <Tabs
-      screenOptions={{
+      screenOptions={({ route }) => ({
         tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
         tabBarInactiveTintColor: Colors[colorScheme ?? "light"].tabIconDefault,
         headerShown: false,
         tabBarStyle: {
           backgroundColor: Colors[colorScheme ?? "light"].background,
           height: 95,
-          paddingBottom: 10,
+          paddingBottom: 8,
           paddingTop: 20,
           borderTopWidth: 0,
         },
@@ -57,31 +70,60 @@ export default function MainLayout() {
           fontSize: 12,
           fontWeight: "500",
         },
-        // Critical: Remove default margins and ensure consistent positioning
         tabBarItemStyle: {
           justifyContent: "center",
           alignItems: "center",
         },
         tabBarIconStyle: {
-          marginBottom: 4, // Small consistent margin from label
+          marginBottom: 4,
         },
-      }}
+        // Use custom tab button to remove press effects
+        tabBarButton: CustomTabButton,
+      })}
     >
       <Tabs.Screen
         name='home'
         options={{
           title: "Home",
           tabBarIcon: ({ color, size, focused }) => (
-            <TabIcon Icon={Home} color={color} size={size} focused={focused} />
+            <TabIcon Icon={House} color={color} size={size} focused={focused} />
           ),
         }}
       />
       <Tabs.Screen
-        name='profile'
+        name='ask-ai'
         options={{
-          title: "Profile",
+          title: "Ask AI",
           tabBarIcon: ({ color, size, focused }) => (
-            <TabIcon Icon={User} color={color} size={size} focused={focused} />
+            <TabIcon
+              Icon={MessageCircle}
+              color={color}
+              size={size}
+              focused={focused}
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name='map'
+        options={{
+          title: "Map",
+          tabBarIcon: ({ color, size, focused }) => (
+            <TabIcon
+              Icon={MapPinned}
+              color={color}
+              size={size}
+              focused={focused}
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name='favorites'
+        options={{
+          title: "Favorite",
+          tabBarIcon: ({ color, size, focused }) => (
+            <TabIcon Icon={Star} color={color} size={size} focused={focused} />
           ),
         }}
       />
@@ -97,6 +139,32 @@ export default function MainLayout() {
               focused={focused}
             />
           ),
+        }}
+      />
+
+      {/* Hidden screens */}
+      <Tabs.Screen
+        name='recommendations'
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name='explore'
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name='detail/[id]'
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name='profile'
+        options={{
+          href: null,
         }}
       />
     </Tabs>

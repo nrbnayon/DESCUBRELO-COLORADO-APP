@@ -38,4 +38,6 @@ config.resolver.extraNodeModules = {
   "import.meta": { url: "" },
 };
 
+config.resolver.assetExts.push("bin");
+
 module.exports = withNativeWind(config, { input: "./global.css" });
