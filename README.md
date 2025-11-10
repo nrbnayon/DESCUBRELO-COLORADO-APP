@@ -213,11 +213,6 @@ DESCUBRELO-COLORADO-APP/
 - **Data Encryption**: Sensitive data protection
 - **Privacy Policy**: Compliant with app store requirements
 - **Location Permissions**: Transparent location usage
-
-## 📞 Support & Contact
-
-- **Email**: victor.descubrelocolorado@gmail.com
-- **Website**: [appdescubrelocolorado.com](https://appdescubrelocolorado.com)
 - **Privacy Policy**: [Privacy & Terms](https://appdescubrelocolorado.com/app-privacy-terms)
 
 ## 🤝 Contributing
