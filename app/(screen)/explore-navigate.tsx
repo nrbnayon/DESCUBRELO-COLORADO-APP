@@ -52,7 +52,8 @@ interface RouteData {
 }
 
 // Google Directions API key - Replace with your actual API key
-const GOOGLE_DIRECTIONS_API_KEY = "AIzaSyD6ht_z9Zw53jO_zdasgQCBykcbJxIn1Gg";
+const GOOGLE_DIRECTIONS_API_KEY =
+  process.env.EXPO_PUBLIC_GOOGLE_DIRECTIONS_API_KEY;
 
 export default function ExploreNavigateScreen() {
   const params = useLocalSearchParams();
@@ -208,8 +209,9 @@ export default function ExploreNavigateScreen() {
 
           if (reverseGeocode.length > 0) {
             const address = reverseGeocode[0];
-            const formattedAddress =
-              `${address.streetNumber || ""} ${address.street || ""}, ${address.city || ""} ${address.postalCode || ""}`.trim();
+            const formattedAddress = `${address.streetNumber || ""} ${
+              address.street || ""
+            }, ${address.city || ""} ${address.postalCode || ""}`.trim();
             setCurrentAddress(formattedAddress || "Current Location");
           }
         } catch (error) {
@@ -234,8 +236,9 @@ export default function ExploreNavigateScreen() {
       } else {
         try {
           // First search in local data
-          const localSearchResults =
-            await MockDataService.searchContent(searchQuery);
+          const localSearchResults = await MockDataService.searchContent(
+            searchQuery
+          );
           const localResults = [
             ...localSearchResults.locations,
             ...localSearchResults.recommendations,
@@ -252,8 +255,9 @@ export default function ExploreNavigateScreen() {
           // If no local results or query looks like an external location, search externally
           if (uniqueLocalResults.length === 0 || searchQuery.length > 3) {
             try {
-              const externalResults =
-                await searchExternalLocations(searchQuery);
+              const externalResults = await searchExternalLocations(
+                searchQuery
+              );
               // Combine local and external results, prioritizing local
               setFilteredLocations([...uniqueLocalResults, ...externalResults]);
             } catch (error) {
@@ -302,7 +306,9 @@ export default function ExploreNavigateScreen() {
             id: `external-${Date.now()}-${index}`,
             name: query,
             title: query,
-            address: `${result.latitude.toFixed(4)}, ${result.longitude.toFixed(4)}`,
+            address: `${result.latitude.toFixed(4)}, ${result.longitude.toFixed(
+              4
+            )}`,
             location: query,
             latitude: result.latitude,
             longitude: result.longitude,
@@ -342,7 +348,9 @@ export default function ExploreNavigateScreen() {
                 formattedAddress || externalLocations[0].address;
               externalLocations[0].location =
                 addressInfo.city || addressInfo.region || query;
-              externalLocations[0].description = `${addressInfo.city || query}, ${addressInfo.country || "Unknown"}`;
+              externalLocations[0].description = `${
+                addressInfo.city || query
+              }, ${addressInfo.country || "Unknown"}`;
             }
           } catch (error) {
             console.log("Mapper error", error);

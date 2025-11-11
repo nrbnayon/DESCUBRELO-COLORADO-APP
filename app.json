@@ -21,7 +21,7 @@
       "bundleIdentifier": "com.descubrelocolorado.app",
       "buildNumber": "1",
       "config": {
-        "googleMapsApiKey": "AIzaSyD8xDRBJQasHLzohG_hk8gmIDQQ6QGJYZE"
+        "googleMapsApiKey": process.env.EXPO_PUBLIC_GOOGLE_MAP_API_KEY
       },
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "This app needs access to your location to show your position on the map and provide directions to nearby places.",
@@ -37,7 +37,7 @@
       "versionCode": 1,
       "config": {
         "googleMaps": {
-          "apiKey": "AIzaSyD8xDRBJQasHLzohG_hk8gmIDQQ6QGJYZE"
+          "apiKey": process.env.EXPO_PUBLIC_GOOGLE_MAP_API_KEY
         }
       },
       "permissions": [
